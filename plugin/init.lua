@@ -5,10 +5,8 @@ get_link = function()
 	local mode = vim.api.nvim_get_mode().mode
 	local left, right = 0, 0
 	if mode == "V" then
-		print("in visual mode")
 		left, right = forge_link.visual_select_line_nums()
 	else
-		print("not in visual mode")
 		left, right = forge_link.last_selection_line_nums()
 	end
 
