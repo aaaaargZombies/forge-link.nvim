@@ -1,5 +1,4 @@
--- this file will be run if you have installed the plugins
--- AND you need to require("module")
+-- To run this file / access the functions you need to require("module")
 
 -- escape naughty pattern characters
 -- https://www.lua.org/pil/20.2.html
@@ -40,7 +39,19 @@ local function base_url(remote)
 	return "https://" .. trim_remote(remote)
 end
 
-local function visual_select_line_nums()
+-- for use while in visual mode
+M.visual_select_line_nums = function()
+	local start_pos = vim.fn.getpos("v")
+	local end_pos = vim.fn.getpos(".")
+
+	local start_line = start_pos[2]
+	local end_line = end_pos[2]
+
+	return start_line, end_line
+end
+
+-- for use after leaving visual mode
+M.last_selection_line_nums = function()
 	local start_pos = vim.api.nvim_buf_get_mark(0, "<")
 	local end_pos = vim.api.nvim_buf_get_mark(0, ">")
 
@@ -51,9 +62,8 @@ local function visual_select_line_nums()
 end
 
 -- TODO : see if I can check for different remotes and turn this into forge_link instead of just github
-M.github_link = function()
+M.github_link = function(left, right)
 	-- https://github.com/USER/REPO/blob/BRANCH/FILE_PATH?plain=1#L1-L6
-	local left, right = visual_select_line_nums()
 	local remote = git_remote()
 	if remote ~= nil and string.match(remote, "github") then
 		return base_url(remote)
