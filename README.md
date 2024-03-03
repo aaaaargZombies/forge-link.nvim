@@ -65,9 +65,4 @@ mkCsv mHeader columns
   </body>
 ```
 
-```elm
-Type Lang 
-    = English 
-    | Welsh
-```
 
