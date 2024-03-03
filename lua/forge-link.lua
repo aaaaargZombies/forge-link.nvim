@@ -1,5 +1,9 @@
 -- To run this file / access the functions you need to require("module")
 
+-- ways to get the filetype
+-- P(vim.api.nvim_buf_get_option(0, "filetype"))
+P(vim.bo.filetype)
+
 -- escape naughty pattern characters
 -- https://www.lua.org/pil/20.2.html
 local function escape(str)
@@ -67,14 +71,14 @@ M.github_link = function(left, right)
 	local remote = git_remote()
 	if remote ~= nil and string.match(remote, "github") then
 		return base_url(remote)
-			.. "/blob/"
-			.. branch_name()
-			.. "/"
-			.. current_file()
-			.. "?plan=1#L"
-			.. left
-			.. "-L"
-			.. right
+				.. "/blob/"
+				.. branch_name()
+				.. "/"
+				.. current_file()
+				.. "?plan=1#L"
+				.. left
+				.. "-L"
+				.. right
 	else
 		return "oops - not a github repo"
 	end
