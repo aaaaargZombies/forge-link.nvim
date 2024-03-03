@@ -10,7 +10,7 @@ get_link = function()
 		left, right = forge_link.last_selection_line_nums()
 	end
 
-	local maybeLink = forge_link.github_link(left, right)
+	local maybeLink = forge_link.forge_link(left, right)
 	vim.fn.setreg("+", maybeLink)
 	print(maybeLink)
 end

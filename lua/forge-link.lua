@@ -17,7 +17,7 @@ local function trim_remote(remote)
 	return remote:gsub(".git", ""):gsub(":", "/")
 end
 
-local function current_file()
+local function file_path()
 	buf = vim.api.nvim_get_current_buf()
 	file_name = vim.api.nvim_buf_get_name(buf)
 	root_dir = vim.fn.getcwd()
@@ -33,6 +33,10 @@ end
 
 local function git_remote()
 	return get_terminal_output("git config --get remote.origin.url")
+end
+
+local function commit_hash()
+	return get_terminal_output("git rev-parse HEAD")
 end
 
 local function base_url(remote)
@@ -72,23 +76,51 @@ end
 --  https://codeberg.org/simonrepp/faircamp/src/commit/75f93a7313a2d9fe380f9e9822d8023f7e482dd6/src/util.rs#L5-L8
 --  https://codeberg.org/USER/REPO/src/commit/COMMIT_HASH/FILE_PATH#L5-L8
 --  https://codeberg.org/USER/REPO/src/branch/BRANCH/FILE_PATH#L5-L8
-M.github_link = function(left, right)
+
+---@param remote string
+---@param branch_name string
+---@param file_path string
+---@param left string
+---@param right string
+---@return string
+local function github_link(remote, branch_name, file_path, left, right)
 	-- https://github.com/USER/REPO/blob/BRANCH/FILE_PATH?plain=1#L1-L6
 	-- https://github.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?plain=1#L1-L6
+	return (base_url(remote) .. "/blob/" .. branch_name .. "/" .. file_path .. "?plan=1#L" .. left .. "-L" .. right)
+end
+
+---@param remote string
+---@return boolean
+local function github_test(remote)
+	return (remote ~= nil and string.match(remote, "github"))
+end
+
+local git_forge = {
+	test = github_test,
+	link = github_link,
+}
+
+M.forges = {}
+
+-- I need a way to take forges from a plugin consumer and pop them at the front of the array
+table.insert(M.forges, git_forge)
+
+M.forge_link = function(left, right)
 	local remote = git_remote()
-	if remote ~= nil and string.match(remote, "github") then
-		return base_url(remote)
-			.. "/blob/"
-			.. branch_name()
-			.. "/"
-			.. current_file()
-			.. "?plan=1#L"
-			.. left
-			.. "-L"
-			.. right
-	else
-		return "oops - not a github repo"
+	local branch_name = branch_name()
+	local file_path = file_path()
+
+	-- if github_test(remote) then
+	-- 	return github_link(remote, branch_name, file_path, left, right)
+	-- else
+	-- 	return "oops - not a git repo"
+	-- end
+	for _, forge in ipairs(M.forges) do
+		if forge.test(remote) then
+			return forge.link(remote, branch_name, file_path, left, right)
+		end
 	end
+	return "oops - not a git repo"
 end
 
 return M
