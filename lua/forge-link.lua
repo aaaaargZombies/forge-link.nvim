@@ -1,12 +1,12 @@
 -- To run this file / access the functions you need to require("module")
 
 ---@class Deetz
----@field remote string
----@field commit string
 ---@field branch string
+---@field commit string
 ---@field file_path string
----@field start_line string
----@field end_line string
+---@field line_end string
+---@field line_start string
+---@field remote string
 
 --- A function that takes the git remote.origin.url and is used decide if the accompanying link function should be run.
 ---@alias Test fun(remote: string): boolean
@@ -45,8 +45,6 @@ local function file_path()
 	return relative_name
 end
 
-local M = {}
-
 local function branch_name()
 	return get_terminal_output("git rev-parse --abbrev-ref HEAD")
 end
@@ -61,28 +59,6 @@ end
 
 local function base_url(remote)
 	return "https://" .. trim_remote(remote)
-end
-
--- for use while in visual mode
-M.visual_select_line_nums = function()
-	local start_pos = vim.fn.getpos("v")
-	local end_pos = vim.fn.getpos(".")
-
-	local start_line = start_pos[2]
-	local end_line = end_pos[2]
-
-	return start_line, end_line
-end
-
--- for use after leaving visual mode
-M.last_selection_line_nums = function()
-	local start_pos = vim.api.nvim_buf_get_mark(0, "<")
-	local end_pos = vim.api.nvim_buf_get_mark(0, ">")
-
-	local start_line = start_pos[1]
-	local end_line = end_pos[1]
-
-	return start_line, end_line
 end
 
 -- TODO : see if I can check for different remotes and turn this into forge_link instead of just github
@@ -132,34 +108,62 @@ local git_forge = {
 	test = github_test,
 }
 
+local M = {}
+
 ---@type Forges
 M.forges = {}
 
--- I need a way to take forges from a plugin consumer and pop them at the front of the array
+-- for use while in visual mode
+M.visual_select_line_nums = function()
+	local start_pos = vim.fn.getpos("v")
+	local end_pos = vim.fn.getpos(".")
+
+	local start_line = start_pos[2]
+	local end_line = end_pos[2]
+
+	return start_line, end_line
+end
+
+-- for use after leaving visual mode
+M.last_selection_line_nums = function()
+	local start_pos = vim.api.nvim_buf_get_mark(0, "<")
+	local end_pos = vim.api.nvim_buf_get_mark(0, ">")
+
+	local start_line = start_pos[1]
+	local end_line = end_pos[1]
+
+	return start_line, end_line
+end
+
 table.insert(M.forges, git_forge)
 
-M.forge_link = function(left, right)
-	local remote = git_remote()
-	local branch_name = branch_name()
-	local file_path = file_path()
+--- Add user's custom forges to the module forges array, placing them at the front to give higher priority
+---@param user_forges Forges
+---@retuen Forges
+M.setup = function(user_forges) end
 
-	-- if github_test(remote) then
-	-- 	return github_link(remote, branch_name, file_path, left, right)
-	-- else
-	-- 	return "oops - not a git repo"
-	-- end
+---@return Deetz
+M.deetz = function() end
+
+M.forge_link = function(left, right)
+	local branch_name = branch_name()
+	local commit = commit_hash()
+	local file_path = file_path()
+	local remote = git_remote()
+
 	for _, forge in ipairs(M.forges) do
 		if forge.test(remote) then
 			return forge.link({
-				remote = remote,
 				branch = branch_name,
+				commit = commit,
 				file_path = file_path,
-				start_line = left,
-				end_line = right,
+				line_end = right,
+				line_start = left,
+				remote = remote,
 			})
 		end
 	end
-	return "oops - not a git repo"
+	return "oops - I can't build a link for this file"
 end
 
 return M
