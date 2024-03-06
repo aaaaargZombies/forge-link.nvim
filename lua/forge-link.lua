@@ -1,5 +1,25 @@
 -- To run this file / access the functions you need to require("module")
 
+---@class Deetz
+---@field remote string
+---@field commit string
+---@field branch string
+---@field file_path string
+---@field start_line string
+---@field end_line string
+
+--- A function that takes the git remote.origin.url and is used decide if the accompanying link function should be run.
+---@alias Test fun(remote: string): boolean
+
+--- A function that takes useful file and git info that can be used to produce a link to the git forges website at a specific point in the code.
+---@alias Link fun(details: Deetz): string
+
+---@class Forge
+---@field test Test
+---@field link Link
+
+---@alias Forges Forge[]
+
 -- escape naughty pattern characters
 -- https://www.lua.org/pil/20.2.html
 local function escape(str)
@@ -19,9 +39,9 @@ end
 
 local function file_path()
 	buf = vim.api.nvim_get_current_buf()
-	file_name = vim.api.nvim_buf_get_name(buf)
+	absolute_path = vim.api.nvim_buf_get_name(buf)
 	root_dir = vim.fn.getcwd()
-	relative_name = string.gsub(file_name, escape(root_dir), "")
+	relative_name = string.gsub(absolute_path, escape(root_dir), "")
 	return relative_name
 end
 
@@ -82,16 +102,22 @@ end
 --  https://gitlab.com/USER/REPO/blob/BRANCH/FILE_PATH?#L10-14
 --  https://gitlab.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?#L10-14
 
----@param remote string
----@param branch_name string
----@param file_path string
----@param left string
----@param right string
+---@param details Deetz
 ---@return string
-local function github_link(remote, branch_name, file_path, left, right)
+local function github_link(details)
 	-- https://github.com/USER/REPO/blob/BRANCH/FILE_PATH?plain=1#L1-L6
 	-- https://github.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?plain=1#L1-L6
-	return (base_url(remote) .. "/blob/" .. branch_name .. "/" .. file_path .. "?plan=1#L" .. left .. "-L" .. right)
+	return (
+		base_url(details.remote)
+		.. "/blob/"
+		.. details.branch
+		.. "/"
+		.. details.file_path
+		.. "?plan=1#L"
+		.. details.start_line
+		.. "-L"
+		.. details.end_line
+	)
 end
 
 ---@param remote string
@@ -100,11 +126,13 @@ local function github_test(remote)
 	return (remote ~= nil and string.match(remote, "github"))
 end
 
+---@type Forge
 local git_forge = {
-	test = github_test,
 	link = github_link,
+	test = github_test,
 }
 
+---@type Forges
 M.forges = {}
 
 -- I need a way to take forges from a plugin consumer and pop them at the front of the array
@@ -122,7 +150,13 @@ M.forge_link = function(left, right)
 	-- end
 	for _, forge in ipairs(M.forges) do
 		if forge.test(remote) then
-			return forge.link(remote, branch_name, file_path, left, right)
+			return forge.link({
+				remote = remote,
+				branch = branch_name,
+				file_path = file_path,
+				start_line = left,
+				end_line = right,
+			})
 		end
 	end
 	return "oops - not a git repo"
