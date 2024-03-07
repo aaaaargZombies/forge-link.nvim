@@ -33,15 +33,33 @@ local function get_terminal_output(command)
 	return result
 end
 
-local function trim_remote(remote)
-	return remote:gsub(".git", ""):gsub(":", "/")
+-- for use while in visual mode
+local function visual_select_line_nums()
+	local start_pos = vim.fn.getpos("v")
+	local end_pos = vim.fn.getpos(".")
+
+	local start_line = start_pos[2]
+	local end_line = end_pos[2]
+
+	return start_line, end_line
+end
+
+-- for use after leaving visual mode
+local function last_selection_line_nums()
+	local start_pos = vim.api.nvim_buf_get_mark(0, "<")
+	local end_pos = vim.api.nvim_buf_get_mark(0, ">")
+
+	local start_line = start_pos[1]
+	local end_line = end_pos[1]
+
+	return start_line, end_line
 end
 
 local function file_path()
-	buf = vim.api.nvim_get_current_buf()
-	absolute_path = vim.api.nvim_buf_get_name(buf)
-	root_dir = vim.fn.getcwd()
-	relative_name = string.gsub(absolute_path, escape(root_dir), "")
+	local buf = vim.api.nvim_get_current_buf()
+	local absolute_path = vim.api.nvim_buf_get_name(buf)
+	local root_dir = vim.fn.getcwd()
+	local relative_name = string.gsub(absolute_path, escape(root_dir), "")
 	return relative_name
 end
 
@@ -57,8 +75,28 @@ local function commit_hash()
 	return get_terminal_output("git rev-parse HEAD")
 end
 
-local function base_url(remote)
-	return "https://" .. trim_remote(remote)
+local function line_nums()
+	local mode = vim.api.nvim_get_mode().mode
+	local left, right = 0, 0
+	if mode == "V" then
+		left, right = visual_select_line_nums()
+	else
+		left, right = last_selection_line_nums()
+	end
+	return left, right
+end
+
+---@return Deetz
+local function deetz()
+	local left, right = line_nums()
+	return {
+		branch = branch_name(),
+		commit = commit_hash(),
+		file_path = file_path(),
+		remote = git_remote(),
+		line_end = right,
+		line_start = left,
+	}
 end
 
 -- TODO : see if I can check for different remotes and turn this into forge_link instead of just github
@@ -81,18 +119,27 @@ end
 ---@param details Deetz
 ---@return string
 local function github_link(details)
+	-- things that take a remote probably need to handle http and ssh links
+	local function trim_remote(remote)
+		return remote:gsub(".git", ""):gsub(":", "/")
+	end
+
+	local function base_url(remote)
+		return "https://" .. trim_remote(remote)
+	end
+
 	-- https://github.com/USER/REPO/blob/BRANCH/FILE_PATH?plain=1#L1-L6
 	-- https://github.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?plain=1#L1-L6
 	return (
 		base_url(details.remote)
 		.. "/blob/"
-		.. details.branch
+		.. details.branch -- should I default to the commit??? either that or a i need to check if the branch is on head
 		.. "/"
 		.. details.file_path
-		.. "?plan=1#L"
-		.. details.start_line
+		.. "#L"
+		.. details.line_start
 		.. "-L"
-		.. details.end_line
+		.. details.line_end
 	)
 end
 
@@ -113,54 +160,19 @@ local M = {}
 ---@type Forges
 M.forges = {}
 
--- for use while in visual mode
-M.visual_select_line_nums = function()
-	local start_pos = vim.fn.getpos("v")
-	local end_pos = vim.fn.getpos(".")
-
-	local start_line = start_pos[2]
-	local end_line = end_pos[2]
-
-	return start_line, end_line
-end
-
--- for use after leaving visual mode
-M.last_selection_line_nums = function()
-	local start_pos = vim.api.nvim_buf_get_mark(0, "<")
-	local end_pos = vim.api.nvim_buf_get_mark(0, ">")
-
-	local start_line = start_pos[1]
-	local end_line = end_pos[1]
-
-	return start_line, end_line
-end
-
 table.insert(M.forges, git_forge)
 
 --- Add user's custom forges to the module forges array, placing them at the front to give higher priority
 ---@param user_forges Forges
----@retuen Forges
-M.setup = function(user_forges) end
+M.setup = function(user_forges)
+	-- TODO Add user's custom forges to the module forges array, placing them at the front to give higher priority
+end
 
----@return Deetz
-M.deetz = function() end
-
-M.forge_link = function(left, right)
-	local branch_name = branch_name()
-	local commit = commit_hash()
-	local file_path = file_path()
-	local remote = git_remote()
-
+M.forge_link = function()
+	local details = deetz()
 	for _, forge in ipairs(M.forges) do
-		if forge.test(remote) then
-			return forge.link({
-				branch = branch_name,
-				commit = commit,
-				file_path = file_path,
-				line_end = right,
-				line_start = left,
-				remote = remote,
-			})
+		if forge.test(details.remote) then
+			return forge.link(deetz())
 		end
 	end
 	return "oops - I can't build a link for this file"

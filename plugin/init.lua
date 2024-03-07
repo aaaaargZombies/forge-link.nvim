@@ -1,16 +1,7 @@
 -- this is will be run if you have installed the plugins
 -- you don't need to require("module") in the dot files
-get_link = function()
-	local forge_link = require("forge-link")
-	local mode = vim.api.nvim_get_mode().mode
-	local left, right = 0, 0
-	if mode == "V" then
-		left, right = forge_link.visual_select_line_nums()
-	else
-		left, right = forge_link.last_selection_line_nums()
-	end
-
-	local maybeLink = forge_link.forge_link(left, right)
+local get_link = function()
+	local maybeLink = require("forge-link").forge_link()
 	vim.fn.setreg("+", maybeLink)
 	print(maybeLink)
 end
