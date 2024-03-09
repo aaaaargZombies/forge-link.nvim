@@ -32,7 +32,7 @@ local function github_link(details)
 	return (
 		base_url(details.remote)
 		.. "/blob/"
-		.. details.branch -- should I default to the commit??? either that or a i need to check if the branch is on head
+		.. details.commit
 		.. "/"
 		.. details.file_path
 		.. "#L"
