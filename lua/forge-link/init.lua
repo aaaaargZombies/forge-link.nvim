@@ -104,10 +104,18 @@ local M = {}
 ---@type Forges
 M.forges = require("forge-link.forges")
 
---- Add user's custom forges to the module forges array, placing them at the front to give higher priority
+--- Add user's custom forges to the module forges array,
+--- placing them at the front to give higher priority so
+--- defailts can be over written
 ---@param user_forges Forges
 M.setup = function(user_forges)
-	-- TODO Add user's custom forges to the module forges array, placing them at the front to give higher priority
+	if user_forges == nil then
+		user_forges = {}
+	end
+	for _, v in ipairs(M.forges) do
+		table.insert(user_forges, v)
+	end
+	M.forges = user_forges
 end
 
 M.forge_link = function()
