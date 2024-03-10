@@ -122,7 +122,7 @@ M.forge_link = function()
 	local details = deetz()
 	for _, forge in ipairs(M.forges) do
 		if forge.test(details.remote) then
-			return forge.link(deetz())
+			return forge.link(details)
 		end
 	end
 	return "oops - I can't build a link for this file"
