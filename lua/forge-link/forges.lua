@@ -12,21 +12,24 @@
 --
 --  gitlab
 --  https://gitlab.com/spritely/goblins/blob/master/goblins/core.rkt?#L10-14
+--  git@gitlab.com:spritely/goblins.git
+--  https://gitlab.com/spritely/goblins.git
 --  https://gitlab.com/USER/REPO/blob/BRANCH/FILE_PATH?#L10-14
 --  https://gitlab.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?#L10-14
+
+local function base_url(remote)
+	if string.match(remote, "@") then
+		-- shh remote
+		return "https://" .. remote:gsub("^git@", ""):gsub("%.git", ""):gsub(":", "/")
+	else
+		-- https remote
+		return remote:gsub("%.git", "")
+	end
+end
 
 ---@param details Deetz
 ---@return string
 local function github_link(details)
-	-- things that take a remote probably need to handle http and ssh links
-	local function trim_remote(remote)
-		return remote:gsub(".git", ""):gsub(":", "/")
-	end
-
-	local function base_url(remote)
-		return "https://" .. trim_remote(remote)
-	end
-
 	-- https://github.com/USER/REPO/blob/BRANCH/FILE_PATH?plain=1#L1-L6
 	-- https://github.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?plain=1#L1-L6
 	return (
@@ -49,9 +52,9 @@ local function github_test(remote)
 end
 
 ---@type Forge
-local git_forge = {
+local github = {
 	link = github_link,
 	test = github_test,
 }
 
-return { git_forge }
+return { github }
