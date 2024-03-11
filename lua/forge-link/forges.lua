@@ -10,12 +10,6 @@
 --  https://codeberg.org/USER/REPO/src/commit/COMMIT_HASH/FILE_PATH#L5-L8
 --  https://codeberg.org/USER/REPO/src/branch/BRANCH/FILE_PATH#L5-L8
 --
---  gitlab
---  https://gitlab.com/spritely/goblins/blob/master/goblins/core.rkt?#L10-14
---  git@gitlab.com:spritely/goblins.git
---  https://gitlab.com/spritely/goblins.git
---  https://gitlab.com/USER/REPO/blob/BRANCH/FILE_PATH?#L10-14
---  https://gitlab.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?#L10-14
 
 local function base_url(remote)
 	if string.match(remote, "@") then
@@ -29,6 +23,34 @@ end
 
 ---@param details Deetz
 ---@return string
+local function gitlab_link(details)
+	--  gitlab
+	--  https://gitlab.com/spritely/goblins/blob/master/goblins/core.rkt?#L10-14
+	--  git@gitlab.com:spritely/goblins.git
+	--  https://gitlab.com/spritely/goblins.git
+	--  https://gitlab.com/USER/REPO/blob/BRANCH/FILE_PATH?#L10-14
+	--  https://gitlab.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?#L10-14
+	--
+	return (
+		base_url(details.remote)
+		.. "/blob/"
+		.. details.commit
+		.. details.file_path
+		.. "#L"
+		.. details.line_start
+		.. "-L"
+		.. details.line_end
+	) -- https://gitlab.com/spritely/goblins/blob/d578c94401f8bf6b816798b24935a9bfd71f4b37//goblins/ocapn/define-recordable-struct.rkt#L22-L41
+end
+
+---@param remote string
+---@return boolean
+local function gitlab_test(remote)
+	return (remote ~= nil and string.match(remote, "gitlab"))
+end
+
+---@param details Deetz
+---@return string
 local function github_link(details)
 	-- https://github.com/USER/REPO/blob/BRANCH/FILE_PATH?plain=1#L1-L6
 	-- https://github.com/USER/REPO/blob/COMMIT_HASH/FILE_PATH?plain=1#L1-L6
@@ -36,7 +58,6 @@ local function github_link(details)
 		base_url(details.remote)
 		.. "/blob/"
 		.. details.commit
-		.. "/"
 		.. details.file_path
 		.. "#L"
 		.. details.line_start
@@ -52,9 +73,15 @@ local function github_test(remote)
 end
 
 ---@type Forge
+local gitlab = {
+	link = gitlab_link,
+	test = gitlab_test,
+}
+
+---@type Forge
 local github = {
 	link = github_link,
 	test = github_test,
 }
 
-return { github }
+return { github, gitlab }
