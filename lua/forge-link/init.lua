@@ -128,4 +128,29 @@ M.forge_link = function()
 	return "oops - I can't build a link for this file"
 end
 
+---grab a code snippet to build a markdown codeblock
+---@param line_start number
+---@param line_end number
+---@return string
+local function getLines(line_start, line_end)
+	if line_start > line_end then
+		local tmp = line_start
+		line_start = line_end
+		line_end = tmp
+	end
+	local lines = vim.api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
+	local code = table.concat(lines, "\n")
+	return code
+end
+
+M.forge_snip = function()
+	local filetype = vim.api.nvim_buf_get_option(0, "filetype")
+	local top = "```" .. filetype .. "\n"
+	local bottom = "```\n\n[view code in context](" .. M.forge_link() .. ")"
+	local details = deetz()
+	local code = getLines(details.line_start, details.line_end)
+
+	return (top .. code .. bottom)
+end
+
 return M
