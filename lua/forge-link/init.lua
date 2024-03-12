@@ -146,7 +146,7 @@ end
 M.forge_snip = function()
 	local filetype = vim.api.nvim_buf_get_option(0, "filetype")
 	local top = "```" .. filetype .. "\n"
-	local bottom = "```\n\n[view code in context](" .. M.forge_link() .. ")"
+	local bottom = "\n```\n\n[view code in context](" .. M.forge_link() .. ")"
 	local details = deetz()
 	local code = getLines(details.line_start, details.line_end)
 
