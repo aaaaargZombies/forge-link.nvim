@@ -4,8 +4,8 @@
 ---@field branch string
 ---@field commit string
 ---@field file_path string
----@field line_end string
----@field line_start string
+---@field line_end number
+---@field line_start number
 ---@field remote string
 
 --- A function that takes the git remote.origin.url and is used decide if the accompanying link function should be run.
