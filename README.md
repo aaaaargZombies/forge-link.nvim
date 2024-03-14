@@ -71,7 +71,7 @@ keymap("n", "<leader>ll", "<cmd>ForgeLink<cr>", opts)
 
 You can pass in new forge options that I haven't written support for and overwrite the defaults I provide.
 
-A `Forge` is an table that consists of a test function and a function to generate a link. The setup function takes an array of `Forge`.
+A `Forge` is a table that consists of a test function and a function to generate a link. The setup function takes an array of `Forge`.
 
 ### `test`
 
