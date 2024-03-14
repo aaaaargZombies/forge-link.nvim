@@ -1,4 +1,4 @@
-# forge link WIP
+# forge-link.nvim
 
 A simple neovim plugin for sharing specific sections of code. Handy for writing documentation and collaboration.
 
