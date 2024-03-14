@@ -1,5 +1,3 @@
--- TODO : see if I can check for different remotes and turn this into forge_link instead of just github
-
 local function base_url(remote)
 	if string.match(remote, "@") then
 		-- shh remote
