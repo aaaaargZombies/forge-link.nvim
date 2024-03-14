@@ -155,6 +155,8 @@ local github = {
 
 ### Register custom forges
 
+The `setup` function takes the array of forges and prepends it to the defaults giving your custom forges priority.
+
 ```lua
 require("forge-link").setup({
 	custom_github_forge,
