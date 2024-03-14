@@ -73,7 +73,7 @@ You can pass in new forge options that I haven't written support for and overwri
 
 A `Forge` is an object that consists of a test function and a function to generate a link. The setup function takes an array of `Forge`.
 
-### test
+### `test`
 
 ```lua
 ---@param remote string
@@ -87,7 +87,7 @@ end
 
 Here's an example for github, it gets the git remote origin as a string and returns true if it contains "github". If you have a repo hosted on gitlab and you called it github you can write your own test to handle that.
 
-### link
+### `link`
 
 ```lua
 ---@param details Deetz
@@ -153,7 +153,7 @@ local github = {
 
 [view code in context](https://github.com/aaaaargZombies/forge-link.nvim/blob/6f29dbeb0401287f3b7e2be355de5581ea7324c8/lua/forge-link/forges.lua#L163-L167)
 
-### setup
+### Register custom forges
 
 ```lua
 require("forge-link").setup({
