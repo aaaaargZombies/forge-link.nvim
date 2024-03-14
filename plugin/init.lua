@@ -15,7 +15,7 @@ end
 local get_snippet = function()
 	local maybeCode = require("forge-link").forge_snip()
 	vim.fn.setreg("+", maybeCode)
-	print(maybeCode)
+	print("copied snippet to clipboard")
 end
 
 -- generate user commands or keybindings etc for the consumer of the plugins
