@@ -167,3 +167,11 @@ require("forge-link").setup({
 ## Caveats
 
 This is only tested on linux, it will probably work on macos, it might work on windows with WSL
+
+## Alternatives
+
+This plugin was largely inspired by [code-link.nvim](https://github.com/mistricky/code-link.nvim) and made for fun.
+
+## Liscense
+
+MIT
