@@ -106,7 +106,7 @@ M.forges = require("forge-link.forges")
 
 --- Add user's custom forges to the module forges array,
 --- placing them at the front to give higher priority so
---- defailts can be over written
+--- defaults can be over written
 ---@param user_forges Forges
 M.setup = function(user_forges)
 	if user_forges == nil then
