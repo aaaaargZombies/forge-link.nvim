@@ -64,7 +64,11 @@ local function file_path()
 end
 
 local function branch_name()
-	return get_terminal_output("git rev-parse --abbrev-ref HEAD")
+	local result = get_terminal_output("git rev-parse --abbrev-ref HEAD")
+	if result == nil then
+		print("No remote - is this file hosted on a forge?")
+	end
+	return result
 end
 
 local function git_remote()
