@@ -21,11 +21,11 @@ end
 
 ## Supported forges
 
+- bitbucket
+- codeberg
 - github
 - gitlab
-- codeberg
 - sourcehut
-- bitbucket
 
 
 ## Installation
