@@ -61,7 +61,7 @@ end
 ---@param details Deetz
 ---@return string
 local function codeberg_link(details)
-	--  codeberg / gittea
+	--  codeberg / forgejo
 	--  https://codeberg.org/simonrepp/faircamp/src/branch/main/src/util.rs#L4-L7
 	--  https://codeberg.org/simonrepp/faircamp/src/commit/75f93a7313a2d9fe380f9e9822d8023f7e482dd6/src/util.rs#L5-L8
 	--  https://codeberg.org/USER/REPO/src/commit/COMMIT_HASH/FILE_PATH#L5-L8
