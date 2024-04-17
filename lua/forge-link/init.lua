@@ -27,10 +27,8 @@ local function escape(str)
 end
 
 local function get_terminal_output(command)
-	local handle = io.popen(command)
-	local result = handle:read("l")
-	handle:close()
-	return result
+	local result = vim.fn.system(command)
+	return result:gsub("\n", "")
 end
 
 -- for use while in visual mode
